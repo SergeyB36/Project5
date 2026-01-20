@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from habit.models import CustomUser
+from users.models import CustomUser
 
 
 class CustomUserSerializer(ModelSerializer):
