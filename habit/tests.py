@@ -1,3 +1,5 @@
+from http.client import responses
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
@@ -37,12 +39,13 @@ class HabitTestCase(APITestCase):
         self.habit.save()
         # Еженедельная
         self.habit = Habit.objects.create(title="Отдыхать", place="дома", action="пить пиво", periodicity="WEEKLY", execution_time=100, user=self.user2)
+        self.pk = self.habit.id
         self.habit.save()
         # Ежемесячная
         self.habit = Habit.objects.create(title="Пойти в магазин", place="на улице", action="тратить деньги", periodicity="MONTHLY", execution_time=100, user=self.user2)
         self.habit.save()
 
-    def test_create_habit(self):
+    def test_get_habit(self):
         """Тест получения данных из БД"""
         habit = Habit.objects.get(title="Правильно питаться")
 
@@ -65,40 +68,98 @@ class HabitTestCase(APITestCase):
         self.assertEqual(response_page1.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response_page2.data['results']), 1)
 
-    #
-    #
-    # def test_unique_email(self):
-    #     """Тест уникальности email"""
-    #     response = self.client.post(
-    #         self.url,
-    #         data={
-    #             'nickname': 'testuser1',
-    #             'email': 'testuser@test.com',
-    #             'password': '1234'
-    #         },
-    #         format='json'
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertIn('email', response.data)
-    #
-    # def test_invalid_data_nickname(self):
-    #     """Тест невалидных данных при создании"""
-    #     response = self.client.post(
-    #         self.url,
-    #         data={
-    #             'nickname': '',
-    #             'email': '',
-    #             'password': '123'
-    #         },
-    #         format='json'
-    #     )
-    #
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-    #     self.assertIn('nickname', response.data)
-    #     self.assertIn('email', response.data)
-    #     self.assertIn('password', response.data)
-    #
-    # def test_str_user(self):
-    #     """Тест строкового представления"""
-    #     user = User.objects.get(nickname="testuser")
-    #     self.assertEqual(str(user), 'testuser')
+    def test_create_habit(self):
+        """Тест создания привычки"""
+        user = User.objects.get(nickname="testuser1")
+        self.client.force_authenticate(user=user)
+        self.user1.set_password("1234")
+        self.url = reverse('habit:habit-create')
+        response = self.client.post(
+            self.url, {
+                'title': "Тест название",
+                'place': "Тест место",
+                'action': "Тест действие",
+                'periodicity': "weekly",
+                'execution_time': 99
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(response.data['user'], user.id)
+        self.assertEqual(response.data['place'], "Тест место")
+        self.assertEqual(response.data['action'], "Тест действие")
+        self.assertEqual(response.data['periodicity'], "weekly")
+        self.assertEqual(response.data['title'], "Тест название")
+        self.assertEqual(response.data['execution_time'], 99)
+
+    def test_retrieve_habit(self):
+        """Тест получения привычки"""
+        habit = Habit.objects.get(title="Отдыхать")
+        periodicity = habit.periodicity
+        action = habit.action
+        place = habit.place
+
+        self.url = reverse('habit:habit-retrieve', kwargs={'pk': habit.pk})
+        response = self.client.get(
+            self.url
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['periodicity'], periodicity)
+        self.assertEqual(response.data['action'], action)
+        self.assertEqual(response.data['place'], place)
+        self.assertEqual(response.data['periodicity'], "WEEKLY")
+
+    def test_update_habit(self):
+        """Тест обновления привычки"""
+        habit = Habit.objects.get(title="Отдыхать")
+        place = habit.place
+        new_plaсe = "в горах"
+
+        self.url = reverse('habit:habit-retrieve', kwargs={'pk': habit.pk})
+        response = self.client.get(
+            self.url
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['place'], place)
+        self.url = reverse('habit:habit-update', kwargs={'pk': habit.pk})
+        response = self.client.patch(
+            self.url, {'place': new_plaсe}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.url = reverse('habit:habit-retrieve', kwargs={'pk': habit.pk})
+        response = self.client.get(
+            self.url
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['place'], new_plaсe)
+
+    def test_delete_habit(self):
+        """Тест удаления привычки"""
+        habit = Habit.objects.get(title='Отдыхать')
+        habit2 = Habit.objects.get(title='Пойти в магазин')
+        # list all
+        self.url = reverse('habit:habit-list')
+        response_page1 = self.client.get(
+            self.url
+        )
+        self.assertEqual(response_page1.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_page1.data['results']), 5)
+        response_page2 = self.client.get(response_page1.data['next'])
+        self.assertEqual(response_page1.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_page2.data['results']), 1)
+        self.url = reverse('habit:habit-delete', kwargs={'pk': habit.id})
+        response = self.client.delete(
+            self.url
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.url = reverse('habit:habit-delete', kwargs={'pk': habit2.id})
+        response = self.client.delete(
+            self.url
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.url = reverse('habit:habit-list')
+        response = self.client.get(
+            self.url
+        )
+        self.assertEqual(response_page1.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 4)
