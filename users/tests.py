@@ -81,6 +81,23 @@ class CustomUserTestCase(APITestCase):
         self.assertIn('email', response.data)
         self.assertIn('password', response.data)
 
+    def test_valid_data_nickname(self):
+        """Тест валидных данных при создании"""
+        response = self.client.post(
+            self.url,
+            data={
+                'nickname': 'valid',
+                'email': 'valid@user.com',
+                'password': '1234'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('nickname', response.data)
+        self.assertIn('email', response.data)
+
+
     def test_str_user(self):
         """Тест строкового представления"""
         user = User.objects.get(nickname="testuser")

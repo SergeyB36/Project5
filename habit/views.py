@@ -1,4 +1,5 @@
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView
+from rest_framework.permissions import AllowAny
 
 from habit.models import Habit
 from habit.paginators import MyPaginator
@@ -11,14 +12,14 @@ class HabitCreateAPIView(CreateAPIView):
     # permission_classes = [CanCreatePermission]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(user=self.request.user)
 
 
 class HabitListAPIView(ListAPIView):
-    queryset = Habit.objects.all()
+    queryset = Habit.objects.all().order_by('-created_at')
     serializer_class = HabitSerializer
     pagination_class = MyPaginator
-    # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
 
 
 class HabitRetrieveAPIView(RetrieveAPIView):

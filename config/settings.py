@@ -80,9 +80,9 @@ REST_FRAMEWORK = {
     "DATE_FORMAT": "%Y-%m-%d",
     "TIME_FORMAT": "%H:%M",
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #     "rest_framework.permissions.IsAuthenticated",
+    # ],
 }
 
 CSRF_TRUSTED_ORIGINS = [

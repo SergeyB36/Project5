@@ -14,7 +14,7 @@ class Habit(models.Model):
         help_text="Заниматься спортом/Правильно питаться"
     )
     place = models.CharField(max_length=250, verbose_name="Место", help_text="на работе/в спортзале/дома")
-    action = models.CharField(unique=True, max_length=50, verbose_name="Действие", help_text="пить воду/бегать")
+    action = models.CharField(max_length=50, verbose_name="Действие", help_text="пить воду/бегать")
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -116,6 +116,9 @@ class Habit(models.Model):
     class Meta:
         verbose_name = "Привычка"
         verbose_name_plural = "Привычки"
+        unique_together = [
+            ("title", "place", "action", "user"),
+        ]
 
     def __str__(self):
         habit_type = "Приятная" if self.is_pleasant else "Полезная"
