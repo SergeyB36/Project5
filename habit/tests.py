@@ -1,11 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from habit.models import Habit
-from habit.servicies import get_today_habits, complete_habit
+from habit.servicies import complete_habit, get_today_habits
 
 User = get_user_model()
 
@@ -323,7 +322,6 @@ class SevicesTestCase(APITestCase):
         self.user2.save()
 
     def test_get_habit_for_send(self):
-        today = timezone.now()
         user = User.objects.get(nickname="testuser1")
         user1 = User.objects.get(nickname="testuser2")
         self.client.force_authenticate(user=user)
