@@ -12,7 +12,7 @@ class HabitTestCase(APITestCase):
     """Тестирование CRUD операций для уроков"""
 
     def setUp(self):
-        """Настройка тестовых данных. Создание привычки №1"""
+        """Настройка тестовых данных"""
         # Пользователь 1
         self.user1 = User.objects.create(nickname="testuser1", email="testuser1@test.com")
         self.user1.set_password("1234")
@@ -48,7 +48,7 @@ class HabitTestCase(APITestCase):
         """Тест получения данных из БД"""
         habit = Habit.objects.get(title="Правильно питаться")
 
-        self.assertEqual(habit.periodicity, '1')
+        self.assertEqual(habit.periodicity, 1)
         self.assertEqual(habit.action, 'Пить воду')
         self.assertEqual(habit.place, 'дома и на работе')
         self.assertEqual(habit.execution_time, 30)
@@ -279,3 +279,40 @@ class HabitTestCase(APITestCase):
             self.url
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class SevicesTestCase(APITestCase):
+    """Тестирование сервисных функций"""
+
+    def setUp(self):
+        """Настройка тестовых данных. Создание привычки №1"""
+        # Пользователь 1
+        self.user1 = User.objects.create(nickname="testuser1", email="testuser1@test.com")
+        self.user1.set_password("1234")
+        self.user1.save()
+
+        # Пользователь 2
+        self.user2 = User.objects.create(nickname="testuser2", email="testuser2@test.com")
+        self.user2.set_password("1234")
+        self.user2.save()
+
+        # Привычки пользователя 1
+        # Ежедневная
+        self.habit = Habit.objects.create(title="Правильно питаться", place="дома и на работе", action="Пить воду", periodicity=1, execution_time=30, user=self.user1, is_public=True)
+        self.habit.save()
+        # Еженедельная
+        self.habit = Habit.objects.create(title="Вести спортивный образ жизни", place="в спортзале", action="подтягиваться на турнике 10 раз", periodicity=7, execution_time=100, user=self.user1)
+        self.habit.save()
+        # Ежемесячная
+        self.habit = Habit.objects.create(title="Зарабатывать деньги", place="на работе", action="получать зарплату", periodicity=1, execution_time=10, user=self.user1)
+        self.habit.save()
+        # Ежедневная
+        self.habit = Habit.objects.create(title="Вести приятный образ жизни", place="в кабаке", action="Играть в видеоигры", periodicity=1, execution_time=100, user=self.user1)
+        self.habit.save()
+        # Еженедельная
+        self.habit = Habit.objects.create(title="Отдыхать", place="дома", action="пить пиво", periodicity=7, execution_time=100, user=self.user1, is_pleasant=True)
+        self.pk = self.habit.id
+        self.habit.save()
+        # Ежемесячная
+        self.habit = Habit.objects.create(title="Пойти в магазин", place="на улице", action="тратить деньги", periodicity=1, execution_time=100, user=self.user1)
+        self.habit.save()

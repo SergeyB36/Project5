@@ -49,12 +49,11 @@ class Habit(models.Model):
         limit_choices_to={'is_pleasant': True}
     )
 
-    periodicity = models.CharField(
-        max_length=10,
+    periodicity = models.PositiveIntegerField(
         choices=PERIODICITY_CHOICES,
         default=1,
         verbose_name='Периодичность',
-        help_text='Периодичность выполнения привычки'
+        help_text='Периодичность выполнения привычки в днях'
     )
 
     reward = models.CharField(
