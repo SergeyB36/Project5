@@ -83,10 +83,6 @@ class Habit(models.Model):
     )
 
     execution_time = models.PositiveIntegerField(
-        validators=[
-            MinValueValidator(1, message='Время должно быть не менее 1 минуты'),
-            MaxValueValidator(120, message='Время не должно превышать 120 минут')
-        ],
         verbose_name='Время на выполнение (в минутах)',
         help_text='Время, которое предположительно потратит пользователь на выполнение привычки'
     )
@@ -112,6 +108,25 @@ class Habit(models.Model):
         default=True,
         verbose_name='Активна'
     )
+
+    # def clean(self):
+    #     """Валидация: только одно поле может быть заполнено"""
+    #     from django.core.exceptions import ValidationError
+    #
+    #     if self.reward and self.related_habit:
+    #         raise ValidationError(
+    #             'Можно указать либо текстовое вознаграждение, либо связанную привычку, но не оба поля одновременно.'
+    #         )
+    #     if not self.reward and not self.related_habit:
+    #         pass
+
+    # def get_reward_display(self):
+    #     """Метод для получения отображаемого значения награды"""
+    #     if self.related_habit:
+    #         return f"Привычка: {self.related_habit.title}"
+    #     elif self.reward:
+    #         return self.reward
+    #     return "Нет вознаграждения"
 
     class Meta:
         verbose_name = "Привычка"

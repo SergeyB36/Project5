@@ -25,7 +25,7 @@ class HabitTestCase(APITestCase):
 
         # Привычки пользователя 1
         # Ежедневная
-        self.habit = Habit.objects.create(title="Правильно питаться", place="дома и на работе", action="Пить воду", periodicity="DAILY", execution_time=30, user=self.user1)
+        self.habit = Habit.objects.create(title="Правильно питаться", place="дома и на работе", action="Пить воду", periodicity="DAILY", execution_time=30, user=self.user1, is_public=True)
         self.habit.save()
         # Еженедельная
         self.habit = Habit.objects.create(title="Вести спортивный образ жизни", place="в спортзале", action="подтягиваться на турнике 10 раз", periodicity="WEEKLY", execution_time=100, user=self.user1)
@@ -33,16 +33,15 @@ class HabitTestCase(APITestCase):
         # Ежемесячная
         self.habit = Habit.objects.create(title="Зарабатывать деньги", place="на работе", action="получать зарплату", periodicity="MONTHLY", execution_time=10, user=self.user1)
         self.habit.save()
-        # Привычки пользователя 2
         # Ежедневная
-        self.habit = Habit.objects.create(title="Вести приятный образ жизни", place="в кабаке", action="Играть в видеоигры", periodicity="DAILY", execution_time=100, user=self.user2)
+        self.habit = Habit.objects.create(title="Вести приятный образ жизни", place="в кабаке", action="Играть в видеоигры", periodicity="DAILY", execution_time=100, user=self.user1)
         self.habit.save()
         # Еженедельная
-        self.habit = Habit.objects.create(title="Отдыхать", place="дома", action="пить пиво", periodicity="WEEKLY", execution_time=100, user=self.user2)
+        self.habit = Habit.objects.create(title="Отдыхать", place="дома", action="пить пиво", periodicity="WEEKLY", execution_time=100, user=self.user1)
         self.pk = self.habit.id
         self.habit.save()
         # Ежемесячная
-        self.habit = Habit.objects.create(title="Пойти в магазин", place="на улице", action="тратить деньги", periodicity="MONTHLY", execution_time=100, user=self.user2)
+        self.habit = Habit.objects.create(title="Пойти в магазин", place="на улице", action="тратить деньги", periodicity="MONTHLY", execution_time=100, user=self.user1)
         self.habit.save()
 
     def test_get_habit(self):
@@ -56,9 +55,11 @@ class HabitTestCase(APITestCase):
         self.assertTrue(habit.is_active)
 
 
-    def test_list_habit(self):
-        """Тест получения списка привычек и пагинации"""
-        self.url = reverse('habit:habit-list')
+    def test_list_self_habit(self):
+        """Тест получения списка своих привычек и пагинации"""
+        self.url = reverse('habit:habit-list-self')
+        user = User.objects.get(nickname="testuser1")
+        self.client.force_authenticate(user=user)
         response_page1 = self.client.get(
             self.url
         )
@@ -67,6 +68,19 @@ class HabitTestCase(APITestCase):
         response_page2 = self.client.get(response_page1.data['next'])
         self.assertEqual(response_page1.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response_page2.data['results']), 1)
+
+
+    def test_list_public_habit(self):
+        """Тест получения списка публичных привычек"""
+        self.url = reverse('habit:habit-list-public')
+        user = User.objects.get(nickname="testuser2")
+        self.client.force_authenticate(user=user)
+        response = self.client.get(
+            self.url
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_create_habit(self):
         """Тест создания привычки"""
@@ -113,6 +127,8 @@ class HabitTestCase(APITestCase):
         """Тест обновления привычки"""
         habit = Habit.objects.get(title="Отдыхать")
         place = habit.place
+        user = User.objects.get(nickname="testuser1")
+        self.client.force_authenticate(user=user)
         new_plaсe = "в горах"
 
         self.url = reverse('habit:habit-retrieve', kwargs={'pk': habit.pk})
@@ -138,7 +154,9 @@ class HabitTestCase(APITestCase):
         habit = Habit.objects.get(title='Отдыхать')
         habit2 = Habit.objects.get(title='Пойти в магазин')
         # list all
-        self.url = reverse('habit:habit-list')
+        user = User.objects.get(nickname="testuser1")
+        self.client.force_authenticate(user=user)
+        self.url = reverse('habit:habit-list-self')
         response_page1 = self.client.get(
             self.url
         )
@@ -157,7 +175,7 @@ class HabitTestCase(APITestCase):
             self.url
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.url = reverse('habit:habit-list')
+        self.url = reverse('habit:habit-list-self')
         response = self.client.get(
             self.url
         )

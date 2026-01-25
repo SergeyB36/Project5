@@ -4,14 +4,15 @@ from rest_framework.permissions import AllowAny
 
 from config import settings
 from habit.views import HabitListAPIView, HabitCreateAPIView, HabitRetrieveAPIView, HabitDestroyAPIView, \
-    HabitUpdateAPIView
+    HabitUpdateAPIView, HabitSelfListAPIView
 from users.apps import UsersConfig
 
 app_name = UsersConfig.name
 
 
 urlpatterns = [
-    path("",HabitListAPIView.as_view(), name="habit-list"),
+    path("",HabitListAPIView.as_view(), name="habit-list-public"),
+    path("my/", HabitSelfListAPIView.as_view(), name="habit-list-self"),
     path("create/", HabitCreateAPIView.as_view(), name="habit-create"),
     path("<int:pk>/", HabitRetrieveAPIView.as_view(), name="habit-retrieve"),
     path("<int:pk>/delete/", HabitDestroyAPIView.as_view(), name="habit-delete"),
