@@ -1,9 +1,9 @@
 """ Сериализатор модели привычки """
-from rest_framework import serializers
+# from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from habit.models import Habit
-from habit.validators import ExecutionTimeValidator, RewardValidator, RelatedHabitValidator
+# from habit.validators import ExecutionTimeValidator, RewardValidator, RelatedHabitValidator
 
 
 class HabitSerializer(ModelSerializer):
