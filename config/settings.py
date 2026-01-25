@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "users",
     "django_celery_beat",
-    "habit"
+    "habit",
 ]
 
 MIDDLEWARE = [
@@ -139,6 +139,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
@@ -147,33 +149,9 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 
-# CELERY_BEAT_SCHEDULE = {
-#     "task-name": {
-#         "task": "users.tasks.block_user",
-#         "schedule": timedelta(days=1),
-#     },
-# }
-
-# Раскомментировать для проверки на реальном сервере следующие 7 строк и настроить .env
-# EMAIL_HOST = "smtp.yandex.ru"
-# EMAIL_PORT = 465
-# EMAIL_USE_TLS = False
-# EMAIL_USE_SSL = True
-# EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-# DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER")
-
-# Закомментировать или удалить для проверки на реальном сервере следующие 4 строки
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, "tmp", "django-emails")
-EMAIL_HOST_USER = ""
-EMAIL_HOST_PASSWORD = ""
-
-# CACHES_ENABLED = True
-# if CACHES_ENABLED:
-#     CACHES = {
-#         "default": {
-#             "BACKEND": "django.core.cache.backends.redis.RedisCache",
-#             "LOCATION": f"redis://{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', '6379')}/1",
-#         }
-#     }
+CELERY_BEAT_SCHEDULE = {
+    "task-name": {
+        "task": "habit.tasks.tg_notification",
+        "schedule": timedelta(days=1),
+    },
+}

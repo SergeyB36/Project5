@@ -7,18 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('habit', '0001_initial'),
+        ("habit", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='habit',
-            name='action',
-            field=models.CharField(help_text='пить воду/бегать', max_length=50, verbose_name='Действие'),
+            model_name="habit",
+            name="action",
+            field=models.CharField(help_text="пить воду/бегать", max_length=50, verbose_name="Действие"),
         ),
         migrations.AlterUniqueTogether(
-            name='habit',
-            unique_together={('title', 'place', 'action', 'user')},
+            name="habit",
+            unique_together={("title", "place", "action", "user")},
         ),
     ]

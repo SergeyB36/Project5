@@ -6,22 +6,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('habit', '0002_alter_habit_action_alter_habit_unique_together'),
+        ("habit", "0002_alter_habit_action_alter_habit_unique_together"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='habit',
-            name='day_of_week',
+            model_name="habit",
+            name="day_of_week",
         ),
         migrations.AlterField(
-            model_name='habit',
-            name='execution_time',
-            field=models.PositiveIntegerField(help_text='Время, которое предположительно потратит пользователь на выполнение привычки', verbose_name='Время на выполнение (в минутах)'),
+            model_name="habit",
+            name="execution_time",
+            field=models.PositiveIntegerField(
+                help_text="Время, которое предположительно потратит пользователь на выполнение привычки",
+                verbose_name="Время на выполнение (в минутах)",
+            ),
         ),
         migrations.AlterField(
-            model_name='habit',
-            name='periodicity',
-            field=models.CharField(choices=[(1, 'Ежедневно'), (2, 'Раз в 2 дня'), (3, 'Раз в 3 дня'), (4, 'Раз в 4 дня'), (5, 'Раз в 5 дня'), (6, 'Раз в 6 дня'), (7, 'Еженедельно')], default=1, help_text='Периодичность выполнения привычки', max_length=10, verbose_name='Периодичность'),
+            model_name="habit",
+            name="periodicity",
+            field=models.CharField(
+                choices=[
+                    (1, "Ежедневно"),
+                    (2, "Раз в 2 дня"),
+                    (3, "Раз в 3 дня"),
+                    (4, "Раз в 4 дня"),
+                    (5, "Раз в 5 дня"),
+                    (6, "Раз в 6 дня"),
+                    (7, "Еженедельно"),
+                ],
+                default=1,
+                help_text="Периодичность выполнения привычки",
+                max_length=10,
+                verbose_name="Периодичность",
+            ),
         ),
     ]

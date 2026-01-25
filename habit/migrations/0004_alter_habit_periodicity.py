@@ -6,13 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('habit', '0003_remove_habit_day_of_week_alter_habit_execution_time_and_more'),
+        ("habit", "0003_remove_habit_day_of_week_alter_habit_execution_time_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='habit',
-            name='periodicity',
-            field=models.PositiveIntegerField(choices=[(1, 'Ежедневно'), (2, 'Раз в 2 дня'), (3, 'Раз в 3 дня'), (4, 'Раз в 4 дня'), (5, 'Раз в 5 дня'), (6, 'Раз в 6 дня'), (7, 'Еженедельно')], default=1, help_text='Периодичность выполнения привычки в днях', verbose_name='Периодичность'),
+            model_name="habit",
+            name="periodicity",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "Ежедневно"),
+                    (2, "Раз в 2 дня"),
+                    (3, "Раз в 3 дня"),
+                    (4, "Раз в 4 дня"),
+                    (5, "Раз в 5 дня"),
+                    (6, "Раз в 6 дня"),
+                    (7, "Еженедельно"),
+                ],
+                default=1,
+                help_text="Периодичность выполнения привычки в днях",
+                verbose_name="Периодичность",
+            ),
         ),
     ]
