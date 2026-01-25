@@ -21,33 +21,16 @@ class Habit(models.Model):
         related_name='habits',
         verbose_name='Создатель привычки'
     )
-    DAILY = 'daily'
-    WEEKLY = 'weekly'
-    MONTHLY = 'monthly'
 
     PERIODICITY_CHOICES = [
-        (DAILY, 'Ежедневно'),
-        (WEEKLY, 'Еженедельно'),
-        (MONTHLY, 'Ежемесячно'),
+        (1, 'Ежедневно'),
+        (2, 'Раз в 2 дня'),
+        (3, 'Раз в 3 дня'),
+        (4, 'Раз в 4 дня'),
+        (5, 'Раз в 5 дня'),
+        (6, 'Раз в 6 дня'),
+        (7, 'Еженедельно'),
     ]
-
-    DAYS_OF_WEEK = [
-        (1, 'Понедельник'),
-        (2, 'Вторник'),
-        (3, 'Среда'),
-        (4, 'Четверг'),
-        (5, 'Пятница'),
-        (6, 'Суббота'),
-        (7, 'Воскресенье'),
-    ]
-
-    day_of_week = models.IntegerField(
-        choices=DAYS_OF_WEEK,
-        blank=True,
-        null=True,
-        verbose_name='День недели',
-        help_text='День недели для выполнения (если привычка не ежедневная)'
-    )
 
     is_pleasant = models.BooleanField(
         default=False,
@@ -69,7 +52,7 @@ class Habit(models.Model):
     periodicity = models.CharField(
         max_length=10,
         choices=PERIODICITY_CHOICES,
-        default=DAILY,
+        default=1,
         verbose_name='Периодичность',
         help_text='Периодичность выполнения привычки'
     )
@@ -109,24 +92,6 @@ class Habit(models.Model):
         verbose_name='Активна'
     )
 
-    # def clean(self):
-    #     """Валидация: только одно поле может быть заполнено"""
-    #     from django.core.exceptions import ValidationError
-    #
-    #     if self.reward and self.related_habit:
-    #         raise ValidationError(
-    #             'Можно указать либо текстовое вознаграждение, либо связанную привычку, но не оба поля одновременно.'
-    #         )
-    #     if not self.reward and not self.related_habit:
-    #         pass
-
-    # def get_reward_display(self):
-    #     """Метод для получения отображаемого значения награды"""
-    #     if self.related_habit:
-    #         return f"Привычка: {self.related_habit.title}"
-    #     elif self.reward:
-    #         return self.reward
-    #     return "Нет вознаграждения"
 
     class Meta:
         verbose_name = "Привычка"

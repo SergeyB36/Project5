@@ -25,30 +25,30 @@ class HabitTestCase(APITestCase):
 
         # Привычки пользователя 1
         # Ежедневная
-        self.habit = Habit.objects.create(title="Правильно питаться", place="дома и на работе", action="Пить воду", periodicity="DAILY", execution_time=30, user=self.user1, is_public=True)
+        self.habit = Habit.objects.create(title="Правильно питаться", place="дома и на работе", action="Пить воду", periodicity=1, execution_time=30, user=self.user1, is_public=True)
         self.habit.save()
         # Еженедельная
-        self.habit = Habit.objects.create(title="Вести спортивный образ жизни", place="в спортзале", action="подтягиваться на турнике 10 раз", periodicity="WEEKLY", execution_time=100, user=self.user1)
+        self.habit = Habit.objects.create(title="Вести спортивный образ жизни", place="в спортзале", action="подтягиваться на турнике 10 раз", periodicity=7, execution_time=100, user=self.user1)
         self.habit.save()
         # Ежемесячная
-        self.habit = Habit.objects.create(title="Зарабатывать деньги", place="на работе", action="получать зарплату", periodicity="MONTHLY", execution_time=10, user=self.user1)
+        self.habit = Habit.objects.create(title="Зарабатывать деньги", place="на работе", action="получать зарплату", periodicity=1, execution_time=10, user=self.user1)
         self.habit.save()
         # Ежедневная
-        self.habit = Habit.objects.create(title="Вести приятный образ жизни", place="в кабаке", action="Играть в видеоигры", periodicity="DAILY", execution_time=100, user=self.user1)
+        self.habit = Habit.objects.create(title="Вести приятный образ жизни", place="в кабаке", action="Играть в видеоигры", periodicity=1, execution_time=100, user=self.user1)
         self.habit.save()
         # Еженедельная
-        self.habit = Habit.objects.create(title="Отдыхать", place="дома", action="пить пиво", periodicity="WEEKLY", execution_time=100, user=self.user1)
+        self.habit = Habit.objects.create(title="Отдыхать", place="дома", action="пить пиво", periodicity=7, execution_time=100, user=self.user1, is_pleasant=True)
         self.pk = self.habit.id
         self.habit.save()
         # Ежемесячная
-        self.habit = Habit.objects.create(title="Пойти в магазин", place="на улице", action="тратить деньги", periodicity="MONTHLY", execution_time=100, user=self.user1)
+        self.habit = Habit.objects.create(title="Пойти в магазин", place="на улице", action="тратить деньги", periodicity=1, execution_time=100, user=self.user1)
         self.habit.save()
 
     def test_get_habit(self):
         """Тест получения данных из БД"""
         habit = Habit.objects.get(title="Правильно питаться")
 
-        self.assertEqual(habit.periodicity, 'DAILY')
+        self.assertEqual(habit.periodicity, '1')
         self.assertEqual(habit.action, 'Пить воду')
         self.assertEqual(habit.place, 'дома и на работе')
         self.assertEqual(habit.execution_time, 30)
@@ -92,8 +92,9 @@ class HabitTestCase(APITestCase):
             self.url, {
                 'title': "Тест название",
                 'place': "Тест место",
+                'reward': "Тест награда",
                 'action': "Тест действие",
-                'periodicity': "weekly",
+                'periodicity': 7,
                 'execution_time': 99
             },
         )
@@ -102,9 +103,90 @@ class HabitTestCase(APITestCase):
         self.assertEqual(response.data['user'], user.id)
         self.assertEqual(response.data['place'], "Тест место")
         self.assertEqual(response.data['action'], "Тест действие")
-        self.assertEqual(response.data['periodicity'], "weekly")
+        self.assertEqual(response.data['periodicity'], 7)
         self.assertEqual(response.data['title'], "Тест название")
         self.assertEqual(response.data['execution_time'], 99)
+
+    def test_validators_habit(self):
+        """Тест валидации данных привычки"""
+        user = User.objects.get(nickname="testuser1")
+        self.client.force_authenticate(user=user)
+        self.user1.set_password("1234")
+        self.url = reverse('habit:habit-create')
+        # Тест валидации поля execution_time (2-120)
+        response = self.client.post(
+            self.url, {
+                'title': "Тест название",
+                'place': "Тест место",
+                'action': "Тест действие",
+                'periodicity': 7,
+                'execution_time': 130
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.post(
+            self.url, {
+                'title': "Тест название",
+                'place': "Тест место",
+                'action': "Тест действие",
+                'periodicity': 7,
+                'execution_time': 1
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.post(
+            self.url, {
+                'title': "Тест название",
+                'place': "Тест место",
+                'is_pleasant': True,
+                'reward': 'Пожрать',
+                'action': "Тест действие",
+                'periodicity': 7,
+                'execution_time': 6
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        is_pleasant_related_habit_id =  Habit.objects.get(title="Отдыхать").id
+        not_is_pleasant_related_habit_id =  Habit.objects.get(title="Пойти в магазин").id
+
+        response = self.client.post(
+            self.url, {
+                'title': "Тест название",
+                'place': "Тест место",
+                'reward': 'Пожрать',
+                'related_habit': not_is_pleasant_related_habit_id,
+                'action': "Тест действие",
+                'periodicity': 7,
+                'execution_time': 6
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.post(
+            self.url, {
+                'title': "Тест название",
+                'place': "Тест место",
+                'related_habit': not_is_pleasant_related_habit_id,
+                'action': "Тест действие",
+                'periodicity': 7,
+                'execution_time': 6
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.post(
+            self.url, {
+                'title': "Тест название",
+                'place': "Тест место",
+                'action': "Тест действие",
+                'related_habit': is_pleasant_related_habit_id,
+                'periodicity': 7,
+                'execution_time': 120
+            },
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_retrieve_habit(self):
         """Тест получения привычки"""
@@ -112,16 +194,23 @@ class HabitTestCase(APITestCase):
         periodicity = habit.periodicity
         action = habit.action
         place = habit.place
-
+        user = User.objects.get(nickname="testuser2")
+        self.client.force_authenticate(user=user)
         self.url = reverse('habit:habit-retrieve', kwargs={'pk': habit.pk})
         response = self.client.get(
             self.url
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['periodicity'], periodicity)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        user = User.objects.get(nickname="testuser1")
+        self.client.force_authenticate(user=user)
+        self.url = reverse('habit:habit-retrieve', kwargs={'pk': habit.pk})
+        response = self.client.get(
+            self.url
+        )
+        self.assertEqual(response.data['periodicity'], int(periodicity))
         self.assertEqual(response.data['action'], action)
         self.assertEqual(response.data['place'], place)
-        self.assertEqual(response.data['periodicity'], "WEEKLY")
+        self.assertEqual(response.data['periodicity'], 7)
 
     def test_update_habit(self):
         """Тест обновления привычки"""
@@ -153,6 +242,7 @@ class HabitTestCase(APITestCase):
         """Тест удаления привычки"""
         habit = Habit.objects.get(title='Отдыхать')
         habit2 = Habit.objects.get(title='Пойти в магазин')
+        habit3 = Habit.objects.get(title='Вести приятный образ жизни')
         # list all
         user = User.objects.get(nickname="testuser1")
         self.client.force_authenticate(user=user)
@@ -181,3 +271,11 @@ class HabitTestCase(APITestCase):
         )
         self.assertEqual(response_page1.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 4)
+
+        user = User.objects.get(nickname="testuser2")
+        self.client.force_authenticate(user=user)
+        self.url = reverse('habit:habit-delete', kwargs={'pk': habit3.id})
+        response = self.client.delete(
+            self.url
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
