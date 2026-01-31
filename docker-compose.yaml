@@ -1,0 +1,66 @@
+services:
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/Stage5
+      - static_volume:/Stage5/staticfiles
+      - media_volume:/Stage5/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+#      REDIS_HOST: redis
+#      REDIS_PORT: 6379
+#      CELERY_BROKER_URL: redis://redis:6379/0
+#      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      HOST: postgres
+
+#  nginx:
+#    image: nginx:latest
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+#      - static_volume:/Stage5/staticfiles
+#    depends_on:
+#      - web
+
+  postgres:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      HOST: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 2
+
+#  redis:
+#    image: redis:7-alpine
+#    container_name: redis
+#    ports:
+#      - "6379:6379"
+#    command: >
+#      redis-server
+#    volumes:
+#      - redis_data:/data
+
+volumes:
+  postgres_data:
+#  redis_data:
+  static_volume:
+  media_volume:
